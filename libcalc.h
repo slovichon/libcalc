@@ -1,3 +1,4 @@
+/* $Id$ */
 #ifndef _CALCLIB_H
 #define _CALCLIB_H
 
@@ -10,29 +11,47 @@ typedef struct _term Term;
 typedef struct _function Function;
 typedef struct _variable Variable;
 
-struct _variable
-{
-	char *name;
-	int power;
+enum clt_t {
+	CLT_NUMBER,
+	CLT_EXPR,
 };
 
-struct _function
-{
-	Expression *operation;
-	char *name;
+enum Operation {
+	OP_ADD,
+	OP_SUB,
+	OP_MULT,
+	OP_DIV,
 };
 
-struct _expression
-{
+struct _variable {
+	char *name;
+	union {
+		Expression *expression;
+		double number;
+	} exponent;
+	clt_t type;
+};
+
+struct _function {
+	Expression *expression;
+	char *name;
+	/* char name; */
+};
+
+struct _expression {
 	Term *terms;
-	int num_terms;
 };
 
-struct _term
-{
+struct _term {
 	double coefficient;
-	Variable *variable;
-	double exponent;
+	union {
+		Expression *expression;
+		Variable *variable;
+	} *parts;
+	/* Exponents on all the above parts */
+	Expression *exponents;
+	/* Binding operations between above parts */
+	Operation *operations;
 };
 
 Term *Term_init(double, Variable *, double);
@@ -42,8 +61,7 @@ Function *Function_init(char *, Expression *);
 void Function_free(Function *);
 
 Expression *Expression_init(void);
-void Expression_free_(Expression *, char *, int);
-#define Expression_free(p) Expression_free(p, __FILE__, __LINE__);
+void Expression_free_(Expression *);
 Expression *parse_string(char *s);
 
 Variable *Variable_init(char *name);
