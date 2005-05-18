@@ -1,9 +1,8 @@
 /* $Id$ */
 
-#include <stdio.h>
-#include <stdarg.h>
+#include <stdlib.h>
 
-#include "calclib.h"
+#include "libcalc.h"
 
 struct cl_expr *
 cl_expr_init(void)
