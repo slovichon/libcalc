@@ -18,7 +18,7 @@ cl_expr_init(void)
 }
 
 void
-expr_free(struct cl_expr *expr)
+cl_expr_free(struct cl_expr *expr)
 {
 	struct cl_term **t;
 
@@ -30,23 +30,21 @@ expr_free(struct cl_expr *expr)
 }
 
 struct cl_expr *
-expr_parse(char *s, int len)
+cl_expr_parse(const char *s)
 {
 	struct cl_expr *expr;
-
 	int function_level = 0;
 	int integral_level = 0;
 	int derivative_level = 0;
-	char *q;
+	int subexprs = 1;
+	char *t, *q;
 
-	expr = Expression_init();
+	expr = cl_expr_init();
 
 	for (q = s; (s != '\0') && (q-s < len); s++) {
 		switch (*q) {
-		case '(': {
+		case '(':
 			/* Parse sub-expression */
-			char *t;
-			int subexprs = 1;
 			for (t = q; *t != '\0'; t++)
 				switch (*t) {
 				case '(':
@@ -61,18 +59,17 @@ expr_parse(char *s, int len)
 					break;
 				}
 			/* t now points to end of sub expression */
-			subexpr = expr_parse(q, t-q);
+			subexpr = cl_expr_parse(q, t-q);
 			q = t+1;
 			break;
-		}
 		case '-': case '0': case '1': case '2': case '3':
 		case '4': case '5': case '6': case '7': case '8':
-		case '9': case '.': {
+		case '9': case '.':
 			break;
-		}
-		case ' ':
+		case ' ': case '\t': case '\n':
 			break;
 		default:
+			break;
 		}
 	}
 
