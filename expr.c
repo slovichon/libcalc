@@ -7,40 +7,43 @@
 struct cl_expr *
 cl_expr_init(void)
 {
-	struct cl_expr_t *expr;
+	struct cl_expr *expr;
 
 	if ((expr = malloc(sizeof(*expr))) == NULL)
 		return (NULL);
-	expr->terms = NULL;
-	expr->num_terms = 0;
+	SLIST_INIT(&expr->clx_terms);
 	return (expr);
 }
 
 void
 cl_expr_free(struct cl_expr *expr)
 {
-	struct cl_term **t;
+	struct cl_term *t, *tp;
 
 	if (expr == NULL)
 		return;
-	for (t = expr->terms; *t != NULL; t++)
-		free(t);
+	for (t = SLIST_FIRST(&expr->clx_terms); t != NULL; t = tp) {
+		tp = SLIST_NEXT(t, clt_next);
+		cl_term_free(t);
+	}
 	free(expr);
 }
 
 struct cl_expr *
-cl_expr_parse(const char *s)
+cl_expr_parse(const char *s, struct cl_parse *parse)
 {
-	struct cl_expr *expr;
 	int function_level = 0;
 	int integral_level = 0;
 	int derivative_level = 0;
 	int subexprs = 1;
-	char *t, *q;
+	struct cl_expr *expr, *subexpr;
+	struct cl_parse subparse;
+	const char *t, *q;
 
 	expr = cl_expr_init();
+	memset(&subparse, 0, sizeof(subparse));
 
-	for (q = s; (s != '\0') && (q-s < len); s++) {
+	for (q = s; *q != '\0'; q++) {
 		switch (*q) {
 		case '(':
 			/* Parse sub-expression */
@@ -58,7 +61,12 @@ cl_expr_parse(const char *s)
 					break;
 				}
 			/* t now points to end of sub expression */
-			subexpr = cl_expr_parse(q, t-q);
+			subparse.clp_options = CLPO_ALLOWNEST;
+			subexpr = cl_expr_parse(q, &subparse);
+			if (subexpr == NULL) {
+				
+			}
+			if ()
 			q = t+1;
 			break;
 		case '-': case '0': case '1': case '2': case '3':
@@ -70,7 +78,7 @@ cl_expr_parse(const char *s)
 		default:
 			break;
 		}
-	}
 
+	}
 	return (expr);
 }
