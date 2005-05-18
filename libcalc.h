@@ -1,15 +1,4 @@
 /* $Id$ */
-#ifndef _CALCLIB_H
-#define _CALCLIB_H
-
-struct _expression;
-struct _term;
-struct _function;
-struct _variable;
-typedef struct _expression Expression;
-typedef struct _term Term;
-typedef struct _function Function;
-typedef struct _variable Variable;
 
 enum clt_t {
 	CLT_NUMBER,
@@ -23,48 +12,47 @@ enum Operation {
 	OP_DIV,
 };
 
-struct _variable {
-	char *name;
+struct cl_var {
+	char			*clv_name;
 	union {
-		Expression *expression;
-		double number;
-	} exponent;
-	clt_t type;
+		struct cl_expr	*clvx_expr;
+		double		 clvx_no;	/* Number */
+	}			 clv_exp;	/* Exponent */
+	enum clt_t		 clv_type;
+#define clv_expr	clv_exponent.clvx_expr
+#define clv_no		clv_exponent.clvx_no
 };
 
-struct _function {
-	Expression *expression;
-	char *name;
-	/* char name; */
+struct cl_func {
+	struct expr_t		*clf_expr;
+	char			*clf_name;
 };
 
-struct _expression {
-	Term *terms;
+struct cl_expr {
+	struct cl_term		*clx_terms;
 };
 
-struct _term {
-	double coefficient;
+struct cl_term {
+	double			 clt_coeff;	/* Coefficient */
 	union {
-		Expression *expression;
-		Variable *variable;
-	} *parts;
-	/* Exponents on all the above parts */
-	Expression *exponents;
-	/* Binding operations between above parts */
-	Operation *operations;
+		struct expr	*cltp_expr;
+		struct var	*cltp_var;
+	}			*clt_parts;
+	struct expr		*clt_exps;	/* Exponents on parts */
+	enum cl_op		*clt_ops;	/* Binding operations */
+#define clt_expr	clt_parts.cltp_expr
+#define clt_var		clt_parts.cltp_var
 };
 
-Term *Term_init(double, Variable *, double);
-void Term_free(Term *);
+struct cl_term			*cl_term_init(double, struct cl_var *, double);
+void				 cl_term_free(struct cl_term *);
 
-Function *Function_init(char *, Expression *);
-void Function_free(Function *);
+struct cl_func			*cl_func_init(const char *, struct cl_expr *);
+void				 cl_func_free(struct cl_func *);
 
-Expression *Expression_init(void);
-void Expression_free_(Expression *);
-Expression *parse_string(char *s);
+struct cl_expr			*cl_expr_init(void);
+void				 cl_expr_free(struct cl_expr *);
+struct cl_expr			*cl_expr_parse(const char *s);
 
-Variable *Variable_init(char *name);
-void Variable_free(Variable *);
-
-#endif /* _CALCLIB_H */
+struct cl_var			*cl_var_init(const char *name);
+void				 cl_var_free(struct cl_var *);

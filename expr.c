@@ -8,7 +8,7 @@
 struct cl_expr *
 cl_expr_init(void)
 {
-	expr_t *expr;
+	struct cl_expr_t *expr;
 
 	if ((expr = malloc(sizeof(*expr))) == NULL)
 		return (NULL);
@@ -18,9 +18,9 @@ cl_expr_init(void)
 }
 
 void
-expr_free(expr_t *expr)
+expr_free(struct cl_expr *expr)
 {
-	term_t **t;
+	struct cl_term **t;
 
 	if (expr == NULL)
 		return;
@@ -29,10 +29,11 @@ expr_free(expr_t *expr)
 	free(expr);
 }
 
-expr_t *
+struct cl_expr *
 expr_parse(char *s, int len)
 {
-	expr_t *expr;
+	struct cl_expr *expr;
+
 	int function_level = 0;
 	int integral_level = 0;
 	int derivative_level = 0;
